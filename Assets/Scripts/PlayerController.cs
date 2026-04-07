@@ -12,10 +12,15 @@ public class PlayerController : MonoBehaviour
 	private float movementX;
 	private float movementY;
 
+	public AudioClip hitSound;
+	public AudioClip pickupSound;
+	private AudioSource audioSource;
+
 	// Start is called once before the first execution of Update after the MonoBehaviour is created
 	void Start()
     {
         rb = GetComponent<Rigidbody>();
+		audioSource = GetComponent<AudioSource>();
 		count = 0;
 
 		SetCountText();
@@ -35,6 +40,7 @@ public class PlayerController : MonoBehaviour
 		if (count >= 12)
 		{
 			winTextObject.SetActive(true);
+			Destroy(GameObject.FindGameObjectWithTag("Enemy"));
 		}
 	}
 
@@ -45,10 +51,22 @@ public class PlayerController : MonoBehaviour
 		rb.AddForce(movement * speed);
 	}
 
+	private void OnCollisionEnter(Collision collision)
+	{
+		if (collision.gameObject.CompareTag("Enemy"))
+		{
+			audioSource.PlayOneShot(hitSound);
+			Destroy(gameObject, 0.1f);
+			winTextObject.gameObject.SetActive(true);
+			winTextObject.GetComponent<TextMeshProUGUI>().text = "You Lose!";
+		}
+	}
+
 	private void OnTriggerEnter(Collider other)
 	{
 		if (other.gameObject.CompareTag("PickUp"))
 		{
+			audioSource.PlayOneShot(pickupSound);
 			other.gameObject.SetActive(false);
 			count = count + 1;
 			SetCountText();
